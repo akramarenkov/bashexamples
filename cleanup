@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+################################################################################
+# Demonstrates using trap for cleanup
+
+################################################################################
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o noglob
+
+# Processing the EXIT signal is sufficient because it is 'generated' upon
+# receipt of other signals such as SIGINT, SIGTERM and and as a result of
+# the errexit option being triggered
+trap 'cleanup 2>/dev/null' EXIT
+
+function cleanup() {
+    set +o errexit
+    set +o nounset
+    set +o pipefail
+
+    unlink -- "${FILE_FIRST}"
+    unlink -- "${FILE_SECOND}"
+
+    echo 'after cleanup'
+
+    test ! -e "${FILE_FIRST}" && printf 'file is not exists %s\n' "${FILE_FIRST}"
+    test ! -e "${FILE_SECOND}" && printf 'file is not exists %s\n' "${FILE_SECOND}"
+}
+
+FILE_FIRST="$(mktemp)"
+FILE_SECOND="$(mktemp)"
+
+unlink -- "${FILE_FIRST}"
+
+echo 'after unlink first file'
+
+sleep 5
+
+unlink -- "${FILE_FIRST}"
+
+echo 'after repeated unlink first file'

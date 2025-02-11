@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+
+################################################################################
+# Demonstrates parallel data item processing using fifo and flock
+#
+# Only effective if the data item processing takes longer than the process of
+# synchronizing the receipt of data item via flock
+
+ITEMS_FILE="${1}"
+ITEM_DELIMITER=$'\n'
+ITEM_READ_TIMEOUT=5
+
+################################################################################
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o noglob
+
+trap 'cleanup 2>/dev/null' EXIT
+
+function cleanup() {
+    set +o errexit
+    set +o nounset
+    set +o pipefail
+
+    for job in $(jobs -p); do
+        kill "${job}"
+    done
+
+    wait
+
+    unlink -- "${FIFO}"
+}
+
+FIFO="$(mktemp --dry-run)"
+HANDLERS_QUANTITY="$(nproc)"
+
+mkfifo -- "${FIFO}"
+
+# Handler of input item
+# ${1} - path to the fifo file
+# ${2} - handler ID
+function handler() {
+    local fifo_file="${1}"
+    local handler_id="${2}"
+
+    trap 'handler_cleanup' EXIT
+
+    # value of file descriptor cannot be used from variable
+    exec 3<"${fifo_file}"
+
+    while true; do
+        flock 3
+        read -r -u 3 -d "${ITEM_DELIMITER}" -t "${ITEM_READ_TIMEOUT}" ITEM
+        flock --unlock 3
+
+        printf '%s:\t%s\n' "${handler_id}" "${ITEM}"
+    done
+}
+
+function handler_cleanup() {
+    flock --unlock 3
+    exec 3>&-
+
+    printf 'exited %s\n' "${handler_id}"
+}
+
+((handler_id = 0)) || true
+
+while test "${handler_id}" -lt "${HANDLERS_QUANTITY}"; do
+    handler "${FIFO}" "${handler_id}" &
+
+    ((handler_id++)) || true
+done
+
+cat -- "${ITEMS_FILE}" >"${FIFO}"
+
+wait

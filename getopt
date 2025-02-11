@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+
+################################################################################
+# Demonstrates the use of getopt to parse command line arguments
+
+VERSION="0.0.1"
+
+################################################################################
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o noglob
+
+EXECUTABLE="$(basename "${0}")"
+
+function print_version() {
+  printf "%s\n" "${VERSION}"
+}
+
+function print_help() {
+  cat <<EOF
+Demonstrates the use of getopt to parse command line arguments
+
+Usage:
+  ${EXECUTABLE} {-f | --first=<short_description>}
+  [-s | --second=<short_description>]
+  [-d | --debug]
+  [-h | --help]
+  [-v | --version]
+  [POSITIONAL_ARGUMENT]
+
+Mandatory arguments:
+  -f, --first         long description, note that value of argument is also mandatory
+
+Optional arguments:
+  -s, --second        long description, note that value of argument is also optional
+  -d, --debug         enables printing of commands and their arguments
+  -h, --help          display this help and exit
+  -v, --version       display version information and exit
+
+Positional arguments:
+  POSITIONAL_ARGUMENT long description
+
+Examples of using:
+  - use first argument:
+    ${EXECUTABLE} -f value
+    ${EXECUTABLE} -fvalue
+    ${EXECUTABLE} --first value
+    ${EXECUTABLE} --first=value
+
+  - use second argument:
+    ${EXECUTABLE} -s
+    ${EXECUTABLE} -svalue
+    ${EXECUTABLE} --second
+    ${EXECUTABLE} --second=value
+EOF
+}
+
+ARGS="$(getopt --options f:s::dhv --longoptions first:,second::,debug,help,version -- "${@}")"
+
+eval set -- "${ARGS}"
+
+while true; do
+  case "${1}" in
+  '-f' | '--first')
+    echo "${2}"
+    shift 2
+    ;;
+  '-s' | '--second')
+    if test -z "${2}"; then
+      echo "second argument is specified without value"
+    else
+      echo "${2}"
+    fi
+
+    shift 2
+    ;;
+  '-d' | '--debug')
+    set -o xtrace
+    shift
+    ;;
+  '-h' | '--help')
+    print_help
+    exit 0
+    ;;
+  '-v' | '--version')
+    print_version
+    exit 0
+    ;;
+  *)
+    break
+    ;;
+  esac
+done
+
+exit 0

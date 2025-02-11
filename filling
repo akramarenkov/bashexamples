@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+################################################################################
+# Fills a file with lines consisting of the specified characters, each line
+# consisting of one character. A block of such lines can be repeated several times
+
+OUTPUT_FILE="${1}"
+LINE_LENGTH="${2:-80}"
+BLOCK_REPETITIONS="${3:-1}"
+CHARACTERS="${4:-* 0 1 2 3 4 5 6 7 8 9}"
+
+################################################################################
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o noglob
+
+block=""
+
+for char in ${CHARACTERS}; do
+    line=""
+
+    ((length = 0)) || true
+
+    while test "${length}" -lt "${LINE_LENGTH}"; do
+        line+="${char}"
+
+        ((length++)) || true
+    done
+
+    block+="${line}"$'\n'
+done
+
+((repeat = 0)) || true
+
+while test "${repeat}" -lt "${BLOCK_REPETITIONS}"; do
+    printf '%s' "${block}"
+
+    ((repeat++)) || true
+done >>"${OUTPUT_FILE}"

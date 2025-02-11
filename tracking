@@ -17,7 +17,7 @@ set -o noglob
 trap 'cleanup 2>/dev/null' EXIT
 trap 'graceful' SIGTERM SIGINT
 
-cleanup() {
+function cleanup() {
     set +o errexit
     set +o nounset
     set +o pipefail
@@ -33,7 +33,7 @@ cleanup() {
     exit 1
 }
 
-graceful() {
+function graceful() {
     IS_GRACEFUL_TERMINATION=true
 }
 

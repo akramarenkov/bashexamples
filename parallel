@@ -25,7 +25,7 @@ function cleanup() {
     set +o pipefail
 
     for job in $(jobs -p); do
-        kill "${job}"
+        kill -- "${job}"
     done
 
     wait
@@ -55,7 +55,7 @@ function handler() {
         read -r -u 3 -d "${ITEM_DELIMITER}" -t "${ITEM_READ_TIMEOUT}" ITEM
         flock --unlock 3
 
-        printf '%s:\t%s\n' "${handler_id}" "${ITEM}"
+        printf -- '%s:\t%s\n' "${handler_id}" "${ITEM}"
     done
 }
 
@@ -63,7 +63,7 @@ function handler_cleanup() {
     flock --unlock 3
     exec 3>&-
 
-    printf 'exited %s\n' "${handler_id}"
+    printf -- 'exited %s\n' "${handler_id}"
 }
 
 ((handler_id = 0)) || true

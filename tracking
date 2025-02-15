@@ -23,7 +23,7 @@ function cleanup() {
     set +o pipefail
 
     for job in $(jobs -p); do
-        kill "${job}"
+        kill -- "${job}"
     done
 
     wait

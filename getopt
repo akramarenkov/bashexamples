@@ -12,10 +12,10 @@ set -o nounset
 set -o pipefail
 set -o noglob
 
-EXECUTABLE="$(basename "${0}")"
+EXECUTABLE="$(basename -- "${0}")"
 
 function print_version() {
-  printf "%s\n" "${VERSION}"
+  printf -- "%s\n" "${VERSION}"
 }
 
 function print_help() {
@@ -64,14 +64,14 @@ eval set -- "${ARGS}"
 while true; do
   case "${1}" in
   '-f' | '--first')
-    echo "${2}"
+    printf -- '%s\n' "${2}"
     shift 2
     ;;
   '-s' | '--second')
     if test -z "${2}"; then
-      echo "second argument is specified without value"
+      echo 'second argument is specified without value'
     else
-      echo "${2}"
+      printf -- '%s\n' "${2}"
     fi
 
     shift 2

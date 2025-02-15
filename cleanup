@@ -25,8 +25,8 @@ function cleanup() {
 
     echo 'after cleanup'
 
-    test ! -e "${FILE_FIRST}" && printf 'file is not exists %s\n' "${FILE_FIRST}"
-    test ! -e "${FILE_SECOND}" && printf 'file is not exists %s\n' "${FILE_SECOND}"
+    test ! -e "${FILE_FIRST}" && printf -- 'file is not exists %s\n' "${FILE_FIRST}"
+    test ! -e "${FILE_SECOND}" && printf -- 'file is not exists %s\n' "${FILE_SECOND}"
 }
 
 FILE_FIRST="$(mktemp)"

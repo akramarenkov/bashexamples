@@ -35,7 +35,7 @@ done
 ((repeat = 0)) || true
 
 while test "${repeat}" -lt "${BLOCK_REPETITIONS}"; do
-    printf '%s' "${block}"
+    printf -- '%s' "${block}"
 
     ((repeat++)) || true
 done >>"${OUTPUT_FILE}"

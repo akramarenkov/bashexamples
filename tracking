@@ -30,6 +30,7 @@ function cleanup() {
 
     test -n "${IS_GRACEFUL_TERMINATION}" && exit 0
 
+    # A signal handler is executed in the same process that called it
     exit 1
 }
 

@@ -21,6 +21,7 @@ block=""
 for char in ${CHARACTERS}; do
     line=""
 
+    # An expression with zero value of variable returns a non-zero exit code
     ((length = 0)) || true
 
     while test "${length}" -lt "${LINE_LENGTH}"; do
@@ -32,10 +33,12 @@ for char in ${CHARACTERS}; do
     block+="${line}"$'\n'
 done
 
-((repeat = 0)) || true
+# Preventing a non-zero exit code from being returned by excluding the zero
+# value of a variable
+((repeat = 1))
 
-while test "${repeat}" -lt "${BLOCK_REPETITIONS}"; do
+while test "${repeat}" -le "${BLOCK_REPETITIONS}"; do
     printf -- '%s' "${block}"
 
-    ((repeat++)) || true
+    ((repeat++))
 done >>"${OUTPUT_FILE}"

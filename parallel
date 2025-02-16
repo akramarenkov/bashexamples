@@ -20,6 +20,10 @@ set -o noglob
 trap 'cleanup 2>/dev/null' EXIT
 
 function cleanup() {
+    # Prevents the main (parent) process from being interrupted until the
+    # cleanup functions of the handlers (child processes) are completed
+    trap '' SIGINT SIGTERM
+
     set +o errexit
     set +o nounset
     set +o pipefail
@@ -31,24 +35,19 @@ function cleanup() {
     wait
 
     unlink -- "${FIFO}"
+
+    echo 'exited main'
 }
 
-FIFO="$(mktemp --dry-run)"
-HANDLERS_QUANTITY="$(nproc)"
-
-mkfifo -- "${FIFO}"
-
 # Handler of input item
-# ${1} - path to the fifo file
-# ${2} - handler ID
 function handler() {
-    local fifo_file="${1}"
-    local handler_id="${2}"
-
     trap 'handler_cleanup' EXIT
 
-    # value of file descriptor cannot be used from variable
-    exec 3<"${fifo_file}"
+    # For flock to work correctly, the file must be opened in each process
+    # separately
+    #
+    # Value of file descriptor cannot be used from variable
+    exec 3<"${FIFO}"
 
     while true; do
         flock 3
@@ -60,18 +59,31 @@ function handler() {
 }
 
 function handler_cleanup() {
-    flock --unlock 3
-    exec 3>&-
+    # Prevents signal handler interruptions by forwarding a signal by a
+    # parent process
+    trap '' SIGINT SIGTERM
 
-    printf -- 'exited %s\n' "${handler_id}"
+    set +o errexit
+    set +o nounset
+    set +o pipefail
+
+    flock --unlock 3
+
+    printf -- 'exited handler %s\n' "${handler_id}"
 }
 
-((handler_id = 0)) || true
+FIFO="$(mktemp --dry-run)"
+HANDLERS_QUANTITY="$(nproc)"
 
-while test "${handler_id}" -lt "${HANDLERS_QUANTITY}"; do
-    handler "${FIFO}" "${handler_id}" &
+mkfifo -- "${FIFO}"
 
-    ((handler_id++)) || true
+((handler_id = 1))
+
+while test "${handler_id}" -le "${HANDLERS_QUANTITY}"; do
+    # Current value of handler_id is inherited by child process
+    handler &
+
+    ((handler_id++))
 done
 
 cat -- "${ITEMS_FILE}" >"${FIFO}"

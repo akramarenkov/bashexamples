@@ -11,7 +11,7 @@ set -o pipefail
 set -o noglob
 
 # Processing the EXIT signal is sufficient because it is 'generated' upon
-# receipt of other signals such as SIGINT, SIGTERM and and as a result of
+# receipt of other signals such as SIGINT, SIGTERM and as a result of
 # the errexit option being triggered
 trap 'cleanup 2>/dev/null' EXIT
 

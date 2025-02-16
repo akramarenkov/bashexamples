@@ -25,6 +25,14 @@ function cleanup() {
 
     echo 'after cleanup'
 
+    # Signal handler can be interrupted by resending interrupt signals
+    # like SIGINT, SIGTERM
+    #
+    # If it is necessary to avoid interruption of a signal handler,
+    # then inside it you need to call
+    # trap '' SIGINT SIGTERM
+    sleep 5
+
     test ! -e "${FILE_FIRST}" && printf -- 'file is not exists %s\n' "${FILE_FIRST}"
     test ! -e "${FILE_SECOND}" && printf -- 'file is not exists %s\n' "${FILE_SECOND}"
 }
@@ -36,6 +44,7 @@ unlink -- "${FILE_FIRST}"
 
 echo 'after unlink first file'
 
+# Called to give time to press Ctrl+C (send SIGINT)
 sleep 5
 
 unlink -- "${FILE_FIRST}"

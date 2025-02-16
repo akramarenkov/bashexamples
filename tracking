@@ -28,14 +28,14 @@ function cleanup() {
 
     wait
 
-    test -n "${IS_GRACEFUL_TERMINATION}" && exit 0
+    test -n "${is_graceful_termination}" && exit 0
 
     # A signal handler is executed in the same process that called it
     exit 1
 }
 
 function graceful() {
-    IS_GRACEFUL_TERMINATION=true
+    is_graceful_termination=true
 }
 
 ADDRS="$(bash -c "ip -json addr | jq -r '.[] | .addr_info[] | select(.family==\"inet\") | .local'")"

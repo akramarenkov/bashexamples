@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+################################################################################
+# Demonstrates tracking for unexpected termination of child processes
+
+PROTOCOL='socks'
+CREDENTIALS='user:password'
+PORT='8080'
+
+################################################################################
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o noglob
+
+trap 'cleanup 2>/dev/null' EXIT
+
+function cleanup() {
+    set +o errexit
+    set +o nounset
+    set +o pipefail
+
+    for job in $(jobs -p); do
+        kill -- "${job}"
+    done
+
+    wait
+}
+
+function restarter() {
+    trap 'cleanup 2>/dev/null' EXIT
+
+    while true; do
+        bash -c "gost -L '${PROTOCOL}://${CREDENTIALS}@${addr}:${PORT}'" &
+        wait
+    done
+}
+
+ADDRS="$(bash -c "ip -json addr | jq -r '.[] | .addr_info[] | select(.family==\"inet\") | .local'")"
+
+for addr in ${ADDRS}; do
+    restarter &
+done
+
+wait

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ################################################################################
-# Demonstrates tracking for unexpected termination of child processes
+# Demonstrates restarting child processes when they terminate unexpectedly.
 
 PROTOCOL='socks'
 CREDENTIALS='user:password'

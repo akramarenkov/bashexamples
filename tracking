@@ -28,9 +28,9 @@ function cleanup() {
 
     wait
 
+    # A signal handler is executed in the same process that called it
     test -n "${is_graceful_termination}" && exit 0
 
-    # A signal handler is executed in the same process that called it
     exit 1
 }
 

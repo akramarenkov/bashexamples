@@ -35,7 +35,7 @@ function cleanup() {
 }
 
 function graceful() {
-    IS_GRACEFUL_TERMINATION=true
+    IS_GRACEFUL_TERMINATION='yes'
 }
 
 ADDRS="$(bash -c "ip -json addr | jq -r '.[] | .addr_info[] | select(.family==\"inet\") | .local'")"

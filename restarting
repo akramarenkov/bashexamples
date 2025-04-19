@@ -32,7 +32,9 @@ function restarter() {
     trap 'cleanup 2>/dev/null' EXIT
 
     while true; do
-        bash -c "gost -L '${PROTOCOL}://${CREDENTIALS}@${addr}:${PORT}'"
+        # Runs in background to provide SIGKILL resistance
+        bash -c "gost -L '${PROTOCOL}://${CREDENTIALS}@${addr}:${PORT}'" &
+        wait
     done
 }
 

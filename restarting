@@ -32,8 +32,7 @@ function restarter() {
     trap 'cleanup 2>/dev/null' EXIT
 
     while true; do
-        bash -c "gost -L '${PROTOCOL}://${CREDENTIALS}@${addr}:${PORT}'" &
-        wait
+        bash -c "gost -L '${PROTOCOL}://${CREDENTIALS}@${addr}:${PORT}'"
     done
 }
 
